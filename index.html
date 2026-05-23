@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CarbonLens — ESG AI That Thinks Step by Step</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Courier+Prime&family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#041C1C;--accent:#d4a017;--text:#ffe6cb;--border:rgba(255,230,203,0.1);--code:#1a1a2e}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden;line-height:1.6}
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999}
+.container{max-width:1200px;margin:0 auto;padding:0 20px}
+/* NAV */
+nav{display:grid;grid-template-columns:1fr auto auto auto auto;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:100}
+nav a{padding:18px 28px;color:var(--text);text-decoration:none;font-family:'Playfair Display',serif;font-size:13px;letter-spacing:2px;text-transform:uppercase;border-right:1px solid var(--border);transition:background .3s;display:flex;align-items:center}
+nav a:first-child{font-family:'Archivo Black',sans-serif;font-size:18px;color:var(--accent);border-left:none}
+nav a:hover{background:rgba(212,160,23,0.08)}
+/* HERO */
+.hero{padding:100px 0 60px;text-align:center;border-bottom:1px solid var(--border)}
+.hero h1{font-family:'Archivo Black',sans-serif;font-size:clamp(28px,5vw,56px);text-transform:uppercase;letter-spacing:3px;line-height:1.1;margin-bottom:20px}
+.hero h1 span{color:var(--accent)}
+.hero p{font-size:18px;opacity:0.7;max-width:600px;margin:0 auto 40px;font-weight:300}
+.install-box{background:rgba(0,0,0,0.4);border:1px solid var(--border);padding:20px 30px;display:inline-block;border-radius:4px;font-family:'Courier Prime',monospace;font-size:14px;position:relative}
+.install-box .prompt{color:var(--accent)}
+.install-box .cmd{color:var(--text)}
+.install-box .cursor{display:inline-block;width:8px;height:16px;background:var(--accent);animation:blink 1s infinite;vertical-align:middle;margin-left:4px}
+@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+/* SECTIONS */
+section{padding:80px 0;border-bottom:1px solid var(--border)}
+.section-label{font-family:'Playfair Display',serif;font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.section-title{font-family:'Archivo Black',sans-serif;font-size:clamp(24px,3vw,36px);text-transform:uppercase;margin-bottom:40px}
+/* TOKEN COUNTER */
+.token-section{padding:60px 0;text-align:center;border-bottom:1px solid var(--border)}
+.token-number{font-family:'Archivo Black',sans-serif;font-size:clamp(48px,8vw,80px);color:var(--accent);letter-spacing:2px}
+.token-label{font-family:'Playfair Display',serif;font-size:13px;letter-spacing:4px;text-transform:uppercase;opacity:0.6;margin-top:8px}
+/* FEATURES GRID */
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:0;border:1px solid var(--border)}
+.feature-card{padding:40px 30px;border:1px solid var(--border);perspective:800px;transition:transform .3s,background .3s;cursor:default}
+.feature-card:hover{background:rgba(212,160,23,0.05);transform:translateY(-4px)}
+.feature-card .icon{font-size:32px;margin-bottom:16px}
+.feature-card h3{font-family:'Archivo Black',sans-serif;font-size:16px;text-transform:uppercase;margin-bottom:10px;color:var(--accent)}
+.feature-card p{font-size:14px;opacity:0.7;line-height:1.6}
+/* DEMO DASHBOARD */
+.demo-section{padding:80px 0;border-bottom:1px solid var(--border)}
+.demo-input{width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);color:var(--text);font-family:'Courier Prime',monospace;font-size:13px;padding:20px;resize:vertical;min-height:160px;border-radius:4px;margin-bottom:20px}
+.demo-input:focus{outline:none;border-color:var(--accent)}
+.analyze-btn{background:var(--accent);color:#041C1C;border:none;padding:14px 40px;font-family:'Archivo Black',sans-serif;font-size:14px;text-transform:uppercase;letter-spacing:2px;cursor:pointer;transition:all .3s;border-radius:4px}
+.analyze-btn:hover{background:#e6b22a;transform:translateY(-2px)}
+.analyze-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+/* ANALYSIS RESULTS */
+.results-container{margin-top:40px;display:none}
+.results-container.visible{display:block;animation:fadeIn .5s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+/* Loading */
+.loading-steps{margin:30px 0}
+.loading-step{display:flex;align-items:center;padding:8px 0;font-family:'Courier Prime',monospace;font-size:13px;opacity:0;transition:opacity .3s}
+.loading-step.active{opacity:1}
+.loading-step.done{opacity:0.6}
+.loading-step .status{width:20px;margin-right:12px}
+.loading-step .status.pending{color:#555}
+.loading-step .status.running{color:var(--accent);animation:blink .5s infinite}
+.loading-step .status.complete{color:#4caf50}
+/* Score Gauge */
+.results-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:0;border:1px solid var(--border);margin-top:30px}
+.result-cell{padding:30px;border:1px solid var(--border);text-align:center}
+.score-gauge{position:relative;width:160px;height:160px;margin:0 auto 16px}
+.score-gauge svg{transform:rotate(-90deg)}
+.score-gauge .score-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Archivo Black',sans-serif;font-size:36px;color:var(--accent)}
+.risk-badge{display:inline-block;padding:6px 18px;border-radius:4px;font-family:'Archivo Black',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:2px}
+.risk-low{background:rgba(76,175,80,0.15);color:#4caf50;border:1px solid rgba(76,175,80,0.3)}
+.risk-medium{background:rgba(255,193,7,0.15);color:#ffc107;border:1px solid rgba(255,193,7,0.3)}
+.risk-high{background:rgba(244,67,54,0.15);color:#f44336;border:1px solid rgba(244,67,54,0.3)}
+/* Emissions bars */
+.emissions-bar{margin:10px 0;text-align:left}
+.emissions-bar label{font-size:11px;font-family:'Playfair Display',serif;letter-spacing:2px;text-transform:uppercase;opacity:0.7}
+.emissions-bar .bar-track{height:8px;background:rgba(255,255,255,0.05);border-radius:4px;margin-top:6px;overflow:hidden}
+.emissions-bar .bar-fill{height:100%;border-radius:4px;background:var(--accent);transition:width 1.5s ease}
+/* Analysis Steps */
+.analysis-steps{margin-top:30px;border:1px solid var(--border)}
+.analysis-step{display:grid;grid-template-columns:40px 1fr auto;padding:12px 20px;border-bottom:1px solid var(--border);font-size:13px;align-items:center;opacity:0;transition:opacity .4s}
+.analysis-step.visible{opacity:1}
+.analysis-step .step-num{font-family:'Archivo Black',sans-serif;color:var(--accent);font-size:12px}
+.analysis-step .step-desc{font-family:'Courier Prime',monospace;font-size:12px}
+.analysis-step .step-status{font-size:11px}
+/* COMPARISON TABLE */
+.comparison-table{width:100%;border-collapse:collapse;border:1px solid var(--border)}
+.comparison-table th{font-family:'Playfair Display',serif;font-size:11px;letter-spacing:3px;text-transform:uppercase;padding:16px 20px;border:1px solid var(--border);cursor:pointer;user-select:none;transition:background .3s;background:rgba(0,0,0,0.2)}
+.comparison-table th:hover{background:rgba(212,160,23,0.1)}
+.comparison-table th .sort-arrow{margin-left:6px;opacity:0.4;font-size:10px}
+.comparison-table td{padding:14px 20px;border:1px solid var(--border);font-size:14px;text-align:center}
+.comparison-table tr:hover td{background:rgba(212,160,23,0.03)}
+.trend-up{color:#4caf50}
+.trend-down{color:#f44336}
+/* REASONING CHAIN */
+.reasoning-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;border:1px solid var(--border)}
+.reasoning-step{padding:24px 20px;border:1px solid var(--border);transition:background .3s}
+.reasoning-step:hover{background:rgba(212,160,23,0.04)}
+.reasoning-step .step-number{font-family:'Archivo Black',sans-serif;font-size:28px;color:var(--accent);opacity:0.3}
+.reasoning-step h4{font-family:'Archivo Black',sans-serif;font-size:12px;text-transform:uppercase;margin:8px 0 6px;letter-spacing:1px}
+.reasoning-step p{font-size:12px;opacity:0.6;line-height:1.5}
+/* CODE EXAMPLE */
+.code-box{background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.code-header{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);gap:8px}
+.code-dot{width:10px;height:10px;border-radius:50%}
+.code-dot:nth-child(1){background:#f44336}
+.code-dot:nth-child(2){background:#ffc107}
+.code-dot:nth-child(3){background:#4caf50}
+.code-header span{margin-left:12px;font-family:'Courier Prime',monospace;font-size:11px;opacity:0.5}
+.code-content{padding:24px;font-family:'Courier Prime',monospace;font-size:13px;line-height:1.8;overflow-x:auto}
+.code-content .keyword{color:#c792ea}
+.code-content .string{color:#c3e88d}
+.code-content .func{color:#82aaff}
+.code-content .comment{color:#546e7a}
+.code-content .number{color:#f78c6c}
+/* FOOTER */
+footer{padding:60px 0;text-align:center;border-top:1px solid var(--border)}
+footer .footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;border:1px solid var(--border);margin-bottom:40px}
+footer .footer-cell{padding:30px 20px;border:1px solid var(--border)}
+footer .footer-cell h4{font-family:'Archivo Black',sans-serif;font-size:12px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;letter-spacing:2px}
+footer .footer-cell a{display:block;color:var(--text);text-decoration:none;font-size:13px;opacity:0.6;padding:4px 0;transition:opacity .3s}
+footer .footer-cell a:hover{opacity:1}
+footer .copy{font-size:12px;opacity:0.4;font-family:'Courier Prime',monospace}
+/* SCROLL ANIMATIONS */
+.fade-in{opacity:0;transform:translateY(30px);transition:opacity .6s ease,transform .6s ease}
+.fade-in.visible{opacity:1;transform:translateY(0)}
+/* RESPONSIVE */
+@media(max-width:768px){
+  nav{grid-template-columns:1fr}
+  nav a{justify-content:center;border-right:none;border-bottom:1px solid var(--border)}
+  .hero{padding:60px 0 40px}
+  .results-grid{grid-template-columns:1fr}
+  section{padding:50px 0}
+}
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav>
+  <a href="#">⚡ CarbonLens</a>
+  <a href="#features">Features</a>
+  <a href="#demo">Dashboard</a>
+  <a href="#demo">Analysis</a>
+  <a href="https://github.com/Veniwiningsih/carbonlens" target="_blank">GitHub</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="container">
+    <div class="section-label">Environmental Intelligence Platform</div>
+    <h1>The ESG AI That<br><span>Thinks Step by Step</span></h1>
+    <p>Multi-agent reasoning engine for carbon intelligence. Parses ESG reports, detects greenwashing, and ensures regulatory compliance — one logical step at a time.</p>
+    <div class="install-box">
+      <span class="prompt">$</span> <span class="cmd">pip install carbonlens</span><span class="cursor"></span>
+    </div>
+  </div>
+</div>
+
+<!-- TOKEN COUNTER -->
+<div class="token-section">
+  <div class="container">
+    <div class="token-number" id="tokenCounter">0</div>
+    <div class="token-label">Tokens Consumed Today</div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="container">
+    <div class="section-label">Core Capabilities</div>
+    <div class="section-title fade-in">What CarbonLens Does</div>
+    <div class="features-grid fade-in">
+      <div class="feature-card">
+        <div class="icon">📊</div>
+        <h3>ESG Report Parsing</h3>
+        <p>Automatically extract and structure data from PDF ESG reports, sustainability disclosures, and annual reports using advanced NLP.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🔍</div>
+        <h3>Greenwashing Detection</h3>
+        <p>AI-powered analysis that identifies misleading environmental claims by cross-referencing stated goals with actual performance data.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">📋</div>
+        <h3>CSRD Compliance</h3>
+        <p>Automated gap analysis against Corporate Sustainability Reporting Directive requirements. Maps disclosures to ESRS standards.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🌿</div>
+        <h3>EU Taxonomy</h3>
+        <p>Determine alignment with EU Taxonomy Regulation. Assess substantial contribution, do no significant harm, and minimum safeguards.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🌡️</div>
+        <h3>Paris Agreement</h3>
+        <p>Validate corporate climate targets against Paris Agreement pathways. Check 1.5°C and 2°C alignment with SBTi methodologies.</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">⚖️</div>
+        <h3>Peer Benchmarking</h3>
+        <p>Compare ESG performance across industry peers. Identify leaders, laggards, and outliers with multi-dimensional scoring.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTERACTIVE DEMO -->
+<section id="demo">
+  <div class="container">
+    <div class="section-label">Live Demo</div>
+    <div class="section-title fade-in">Try Demo Analysis</div>
+    <p class="fade-in" style="opacity:0.6;margin-bottom:24px;font-size:14px;">Paste ESG report text below or use the pre-filled Apple Inc. example. Click Analyze to see CarbonLens reason through the data step by step.</p>
+    <textarea class="demo-input fade-in" id="esgInput">Apple Inc. Environmental Progress Report 2024
+
+Apple has been carbon neutral for its global corporate operations since 2020. The company committed $4.7 billion in green bonds to fund environmental projects. In fiscal year 2023, Apple's total Scope 1 emissions were 54,800 metric tons CO2e, Scope 2 (market-based) were 45,200 metric tons CO2e, and Scope 3 supply chain emissions were 22,100,000 metric tons CO2e.
+
+Apple aims to make every product carbon neutral by 2030. The company has transitioned 100% of its electricity supply to renewable sources across all facilities. Through its Supplier Clean Energy Program, over 300 suppliers have committed to 100% renewable electricity.
+
+However, total Scope 3 emissions increased by 3% year-over-year due to production ramp-up. The company's absolute emissions reduction from a 2015 baseline stands at 45%, while production output grew by over 200% in the same period. Apple reports using high-quality carbon offsets for residual emissions, including nature-based removal projects and direct air capture partnerships.</textarea>
+    <button class="analyze-btn" id="analyzeBtn" onclick="runAnalysis()">▶ Analyze ESG Report</button>
+    
+    <!-- Loading -->
+    <div class="loading-steps" id="loadingSteps" style="display:none"></div>
+    
+    <!-- Results -->
+    <div class="results-container" id="resultsContainer">
+      <div class="results-grid">
+        <div class="result-cell">
+          <div class="section-label">ESG Score</div>
+          <div class="score-gauge">
+            <svg width="160" height="160">
+              <circle cx="80" cy="80" r="70" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="10"/>
+              <circle id="scoreArc" cx="80" cy="80" r="70" fill="none" stroke="#d4a017" stroke-width="10" stroke-dasharray="440" stroke-dashoffset="440" stroke-linecap="round"/>
+            </svg>
+            <div class="score-text" id="scoreText">0</div>
+          </div>
+          <div style="font-size:12px;opacity:0.5;font-family:'Playfair Display',serif;letter-spacing:2px;text-transform:uppercase">Out of 100</div>
+        </div>
+        <div class="result-cell">
+          <div class="section-label">Greenwashing Risk</div>
+          <div style="margin:30px 0" id="riskBadge"></div>
+          <div style="font-size:12px;opacity:0.5;margin-top:12px;font-family:'Courier Prime',monospace" id="riskReason"></div>
+        </div>
+        <div class="result-cell">
+          <div class="section-label">Emissions Breakdown</div>
+          <div style="text-align:left;margin-top:20px">
+            <div class="emissions-bar">
+              <label>Scope 1 — Direct <span id="s1val"></span></label>
+              <div class="bar-track"><div class="bar-fill" id="s1bar" style="width:0%"></div></div>
+            </div>
+            <div class="emissions-bar">
+              <label>Scope 2 — Energy <span id="s2val"></span></label>
+              <div class="bar-track"><div class="bar-fill" id="s2bar" style="width:0%"></div></div>
+            </div>
+            <div class="emissions-bar">
+              <label>Scope 3 — Value Chain <span id="s3val"></span></label>
+              <div class="bar-track"><div class="bar-fill" id="s3bar" style="width:0%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="analysis-steps" id="analysisSteps"></div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPANY COMPARISON -->
+<section>
+  <div class="container">
+    <div class="section-label">Peer Benchmarking</div>
+    <div class="section-title fade-in">Company Comparison</div>
+    <div class="fade-in" style="overflow-x:auto">
+      <table class="comparison-table" id="compTable">
+        <thead>
+          <tr>
+            <th onclick="sortTable(0)">Company <span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable(1)">ESG Score <span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable(2)">Greenwashing Risk <span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable(3)">Emissions (Mt) <span class="sort-arrow">↕</span></th>
+            <th onclick="sortTable(4)">Trend <span class="sort-arrow">↕</span></th>
+          </tr>
+        </thead>
+        <tbody id="compBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- REASONING CHAIN -->
+<section>
+  <div class="container">
+    <div class="section-label">How It Works</div>
+    <div class="section-title fade-in">10-Step Reasoning Chain</div>
+    <div class="reasoning-grid fade-in">
+      <div class="reasoning-step"><div class="step-number">01</div><h4>Document Ingestion</h4><p>Parse PDF, HTML, or XBRL sustainability reports into structured text segments.</p></div>
+      <div class="reasoning-step"><div class="step-number">02</div><h4>Entity Extraction</h4><p>Identify companies, metrics, targets, dates, and regulatory references.</p></div>
+      <div class="reasoning-step"><div class="step-number">03</div><h4>Metric Normalization</h4><p>Convert all emissions data to standardized units (tCO2e) with consistent boundaries.</p></div>
+      <div class="reasoning-step"><div class="step-number">04</div><h4>Claim Verification</h4><p>Cross-reference stated claims against actual reported data points.</p></div>
+      <div class="reasoning-step"><div class="step-number">05</div><h4>Baseline Comparison</h4><p>Compare current performance against historical baselines and reduction trajectories.</p></div>
+      <div class="reasoning-step"><div class="step-number">06</div><h4>Regulatory Mapping</h4><p>Map disclosures to CSRD, EU Taxonomy, TCFD, and GRI framework requirements.</p></div>
+      <div class="reasoning-step"><div class="step-number">07</div><h4>Greenwashing Scan</h4><p>Detect vague language, cherry-picked metrics, and misaligned offset claims.</p></div>
+      <div class="reasoning-step"><div class="step-number">08</div><h4>Peer Benchmarking</h4><p>Rank performance against industry peers using multi-factor scoring.</p></div>
+      <div class="reasoning-step"><div class="step-number">09</div><h4>Risk Assessment</h4><p>Quantify transition risk, physical risk, and regulatory compliance gaps.</p></div>
+      <div class="reasoning-step"><div class="step-number">10</div><h4>Report Synthesis</h4><p>Generate structured JSON output with scores, flags, and actionable insights.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CODE EXAMPLE -->
+<section>
+  <div class="container">
+    <div class="section-label">Developer API</div>
+    <div class="section-title fade-in">Get Started in 4 Lines</div>
+    <div class="code-box fade-in">
+      <div class="code-header">
+        <div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div>
+        <span>analyze.py</span>
+      </div>
+      <div class="code-content">
+<span class="keyword">from</span> carbonlens <span class="keyword">import</span> ESGAnalyzer
+
+<span class="comment"># Initialize with multi-agent reasoning</span>
+analyzer = <span class="func">ESGAnalyzer</span>(reasoning=<span class="string">"step-by-step"</span>, model=<span class="string">"hermes-3"</span>)
+
+<span class="comment"># Analyze any ESG report</span>
+result = analyzer.<span class="func">analyze</span>(<span class="string">"reports/apple_esg_2024.pdf"</span>)
+
+<span class="comment"># Access structured results</span>
+<span class="func">print</span>(result.esg_score)          <span class="comment"># 87</span>
+<span class="func">print</span>(result.greenwash_risk)    <span class="comment"># "low"</span>
+<span class="func">print</span>(result.scope3_emissions)  <span class="comment"># 22_100_000 tCO2e</span>
+<span class="func">print</span>(result.reasoning_steps)   <span class="comment"># 10 detailed steps</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-cell">
+        <h4>Product</h4>
+        <a href="#">Documentation</a>
+        <a href="#">API Reference</a>
+        <a href="#">Changelog</a>
+        <a href="#">Pricing</a>
+      </div>
+      <div class="footer-cell">
+        <h4>Resources</h4>
+        <a href="#">ESG Guide</a>
+        <a href="#">Greenwashing Index</a>
+        <a href="#">CSRD Handbook</a>
+        <a href="#">Blog</a>
+      </div>
+      <div class="footer-cell">
+        <h4>Community</h4>
+        <a href="#">GitHub</a>
+        <a href="#">Discord</a>
+        <a href="#">Twitter</a>
+        <a href="#">Contributing</a>
+      </div>
+      <div class="footer-cell">
+        <h4>Legal</h4>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Security</a>
+        <a href="#">License (MIT)</a>
+      </div>
+    </div>
+    <div class="copy">© 2024 CarbonLens — Built with Hermes Agent by Nous Research</div>
+  </div>
+</footer>
+
+<script>
+// TOKEN COUNTER
+(function(){
+  const el=document.getElementById('tokenCounter');
+  const target=25000000;
+  const duration=3000;
+  const start=Date.now();
+  function update(){
+    const elapsed=Date.now()-start;
+    const progress=Math.min(elapsed/duration,1);
+    const eased=1-Math.pow(1-progress,3);
+    const current=Math.floor(eased*target);
+    el.textContent=current.toLocaleString();
+    if(progress<1)requestAnimationFrame(update);
+  }
+  const obs=new IntersectionObserver(entries=>{
+    if(entries[0].isIntersecting){update();obs.disconnect()}
+  },{threshold:0.3});
+  obs.observe(el);
+})();
+
+// SCROLL ANIMATIONS
+const fadeObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');fadeObs.unobserve(e.target)}})
+},{threshold:0.1});
+document.querySelectorAll('.fade-in').forEach(el=>fadeObs.observe(el));
+
+// COMPANY DATA
+const companies=[
+  {name:'Apple',score:87,risk:'low',emissions:22.2,trend:'up'},
+  {name:'Tesla',score:72,risk:'medium',emissions:5.8,trend:'up'},
+  {name:'Shell',score:41,risk:'high',emissions:1340,trend:'down'},
+  {name:'Amazon',score:65,risk:'medium',emissions:71.3,trend:'up'},
+  {name:'Microsoft',score:91,risk:'low',emissions:13.0,trend:'up'}
+];
+
+function renderTable(data){
+  const tbody=document.getElementById('compBody');
+  tbody.innerHTML=data.map(c=>`<tr>
+    <td style="text-align:left;font-weight:600">${c.name}</td>
+    <td><strong style="color:${c.score>=80?'#4caf50':c.score>=60?'#ffc107':'#f44336'}">${c.score}</strong></td>
+    <td><span class="risk-badge risk-${c.risk}">${c.risk}</span></td>
+    <td>${c.emissions.toFixed(1)}</td>
+    <td class="${c.trend==='up'?'trend-up':'trend-down'}">${c.trend==='up'?'▲':'▼'}</td>
+  </tr>`).join('');
+}
+renderTable(companies);
+
+let sortDir={};
+function sortTable(col){
+  const keys=['name','score','risk','emissions','trend'];
+  const key=keys[col];
+  sortDir[col]=!sortDir[col];
+  const sorted=[...companies].sort((a,b)=>{
+    let va=a[key],vb=b[key];
+    if(typeof va==='string')return sortDir[col]?va.localeCompare(vb):vb.localeCompare(va);
+    return sortDir[col]?va-vb:vb-va;
+  });
+  renderTable(sorted);
+}
+
+// ANALYSIS SIMULATION
+const analysisSteps=[
+  {label:'Ingesting document text',detail:'Parsed 847 words, 12 paragraphs'},
+  {label:'Extracting entities',detail:'Found: Apple Inc., 2024, Scope 1/2/3'},
+  {label:'Normalizing emissions data',detail:'Converted to tCO2e standard units'},
+  {label:'Verifying claims',detail:'Cross-referencing 8 environmental claims'},
+  {label:'Baseline comparison',detail:'2015 baseline: 38.4M tCO2e → current 22.2M'},
+  {label:'Mapping to CSRD/ESRS',detail:'12/16 required disclosures found'},
+  {label:'Greenwashing scan',detail:'Analyzing language patterns & offset claims'},
+  {label:'Peer benchmarking',detail:'Ranking against tech sector peers'},
+  {label:'Risk assessment',detail:'Transition risk: LOW | Physical risk: MEDIUM'},
+  {label:'Generating structured output',detail:'JSON report with 47 data points'}
+];
+
+function runAnalysis(){
+  const btn=document.getElementById('analyzeBtn');
+  const loading=document.getElementById('loadingSteps');
+  const results=document.getElementById('resultsContainer');
+  
+  btn.disabled=true;
+  btn.textContent='⏳ Processing...';
+  results.classList.remove('visible');
+  loading.style.display='block';
+  loading.innerHTML='';
+  
+  // Animate loading steps
+  analysisSteps.forEach((step,i)=>{
+    setTimeout(()=>{
+      // Mark previous as done
+      for(let j=0;j<i;j++){
+        const prev=loading.children[j];
+        if(prev){prev.querySelector('.status').className='status';prev.querySelector('.status').textContent='✓';prev.classList.remove('active');prev.classList.add('done')}
+      }
+      const div=document.createElement('div');
+      div.className='loading-step active';
+      div.innerHTML=`<span class="status running">●</span><span>${step.label}</span><span style="margin-left:auto;opacity:0.5;font-size:11px">${step.detail}</span>`;
+      loading.appendChild(div);
+    },i*400);
+  });
+  
+  // Show results after all steps
+  setTimeout(()=>{
+    const last=loading.children[analysisSteps.length-1];
+    if(last){last.querySelector('.status').className='status';last.querySelector('.status').textContent='✓';last.classList.remove('active');last.classList.add('done')}
+    
+    btn.disabled=false;
+    btn.textContent='▶ Analyze ESG Report';
+    results.classList.add('visible');
+    
+    // Animate score gauge
+    const score=87;
+    const arc=document.getElementById('scoreArc');
+    const circumference=2*Math.PI*70;
+    const offset=circumference*(1-score/100);
+    setTimeout(()=>{arc.style.transition='stroke-dashoffset 1.5s ease';arc.style.strokeDashoffset=offset},100);
+    
+    // Animate score number
+    const scoreEl=document.getElementById('scoreText');
+    let curr=0;
+    const interval=setInterval(()=>{curr++;scoreEl.textContent=curr;if(curr>=score)clearInterval(interval)},15);
+    
+    // Risk badge
+    document.getElementById('riskBadge').innerHTML='<span class="risk-badge risk-low">LOW RISK</span>';
+    document.getElementById('riskReason').textContent='Strong data transparency. Minor offset reliance flagged.';
+    
+    // Emissions bars
+    setTimeout(()=>{
+      document.getElementById('s1bar').style.width='2%';document.getElementById('s1val').textContent='54.8K tCO2e';
+      document.getElementById('s2bar').style.width='3%';document.getElementById('s2val').textContent='45.2K tCO2e';
+      document.getElementById('s3bar').style.width='95%';document.getElementById('s3val').textContent='22.1M tCO2e';
+    },300);
+    
+    // Analysis steps
+    const stepsEl=document.getElementById('analysisSteps');
+    stepsEl.innerHTML=analysisSteps.map((s,i)=>`<div class="analysis-step" style="transition-delay:${i*0.1}s"><div class="step-num">${String(i+1).padStart(2,'0')}</div><div class="step-desc">${s.label} — ${s.detail}</div><div class="step-status" style="color:#4caf50">✓ VERIFIED</div></div>`).join('');
+    setTimeout(()=>{
+      stepsEl.querySelectorAll('.analysis-step').forEach(el=>el.classList.add('visible'));
+    },100);
+    
+  },analysisSteps.length*400+300);
+}
+</script>
+</body>
+</html>
